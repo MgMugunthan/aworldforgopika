@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f7dbe5">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <title>MG × G — A Tiny Courtroom Drama</title>
 <style>
 :root{--rose:#f4c6d5;--deep:#8e3f60;--wine:#61243e;--gold:#d5a64b;--cream:#fff9f4;--ink:#432638}
@@ -49,6 +51,7 @@ const app=document.getElementById('app');
 const petals=document.getElementById('petals');
 let activeScreen='home';
 let nextScreen='home';
+function track(name){if(typeof window.va==='function')window.va('event',{name});}
 
 function renderScreen(screen){
   activeScreen=screen;
@@ -75,8 +78,9 @@ window.addEventListener('hashchange',()=>{
   if(screen!==activeScreen) renderScreen(screen);
 });
 for(let i=0;i<18;i++){const p=document.createElement('span');p.className='petal';p.textContent=['✦','❧','♥','✿'][i%4];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(9+Math.random()*13)+'s';p.style.animationDelay=(-Math.random()*18)+'s';p.style.fontSize=(12+Math.random()*15)+'px';petals.appendChild(p)}
-const button=(label,cls,fn)=>{const b=document.createElement('button');b.className=cls;b.textContent=label;b.onclick=fn;return b};
+const button=(label,cls,fn)=>{const b=document.createElement('button');b.className=cls;b.textContent=label;b.onclick=()=>{const events={yesPage:'opening_yes',courtPage:'opening_no',jailPage:'courtroom_yes_jail',releasePage:'courtroom_no_release'};track(events[fn.name]||'choice_click');fn()};return b};
 function show(markup){
+  track('screen_'+nextScreen);
   if(nextScreen!==activeScreen){
     // Each in-page screen becomes a browser-history entry, so Android Back
     // returns to the previous screen instead of leaving Chrome.
