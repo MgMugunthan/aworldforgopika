@@ -49,9 +49,8 @@ const app=document.getElementById('app');
 const petals=document.getElementById('petals');
 let activeScreen='home';
 let nextScreen='home';
-history.replaceState({screen:'home'},'',location.pathname+location.search+'#home');
-window.addEventListener('popstate',event=>{
-  const screen=event.state?.screen||'home';
+
+function renderScreen(screen){
   activeScreen=screen;
   nextScreen=screen;
   if(screen==='court') courtPage();
@@ -59,10 +58,34 @@ window.addEventListener('popstate',event=>{
   else if(screen==='release') releasePage();
   else if(screen==='yes') yesPage();
   else home();
+}
+
+// Keep the opening screen as a real browser-history entry.
+history.replaceState({screen:'home'},'',location.pathname+location.search+'#home');
+
+window.addEventListener('popstate',event=>{
+  // Android Chrome's system Back button arrives here.
+  const screen=(event.state&&event.state.screen)||location.hash.slice(1)||'home';
+  renderScreen(screen);
+});
+
+// Also support browsers that report fragment navigation separately.
+window.addEventListener('hashchange',()=>{
+  const screen=location.hash.slice(1)||'home';
+  if(screen!==activeScreen) renderScreen(screen);
 });
 for(let i=0;i<18;i++){const p=document.createElement('span');p.className='petal';p.textContent=['✦','❧','♥','✿'][i%4];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(9+Math.random()*13)+'s';p.style.animationDelay=(-Math.random()*18)+'s';p.style.fontSize=(12+Math.random()*15)+'px';petals.appendChild(p)}
 const button=(label,cls,fn)=>{const b=document.createElement('button');b.className=cls;b.textContent=label;b.onclick=fn;return b};
-function show(markup){if(nextScreen!==activeScreen){history.pushState({screen:nextScreen},'',location.pathname+location.search+'#'+nextScreen);activeScreen=nextScreen;}app.innerHTML=`<section class="panel">${markup}</section>`;window.scrollTo({top:0,behavior:'smooth'})}
+function show(markup){
+  if(nextScreen!==activeScreen){
+    // Each in-page screen becomes a browser-history entry, so Android Back
+    // returns to the previous screen instead of leaving Chrome.
+    history.pushState({screen:nextScreen},'',location.pathname+location.search+'#'+nextScreen);
+    activeScreen=nextScreen;
+  }
+  app.innerHTML=`<section class="panel">${markup}</section>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 const photo=(file,alt,extra='')=>`<img class="art ${extra}" src="photo_mg/${file}" alt="${alt}" onerror="this.style.display='none'">`;
 function home(){nextScreen='home';show(`<div class="kicker">A tiny message from MG</div><div class="ornament">✦ ❧ ✦</div>${photo('rose-bouquet.png','Rose bouquet','hero-decor')}<h1>Will You Be the G in My MG? 💗</h1><p class="sub">MG has one little question for G...</p><div class="ornament">🌹 ✧ 🌹</div><div class="actions" id="choices"></div><div class="footer">A little rose-gold comedy production · MG</div>`);document.getElementById('choices').append(button('YES 💖','yes',yesPage),button('NO 🙈','no',courtPage))}
 function yesPage(){nextScreen='yes';show(`<div class="kicker">A very unexpected connection issue</div><div class="browser"><div class="browserbar">◉ &nbsp; Not secure &nbsp; · · ·</div><div class="browserbody"><div class="wifi">◔̸</div><h3>This site can't be reached</h3><div>Connection lost unexpectedly</div></div></div><h2>WAIT... MG WAS NOT PREPARED FOR THIS! 🤣</h2>${photo('mg-surprised.png','MG looking surprised')}<p class="final-line">But seriously... ❤️</p><p class="final-line">I'm just a step away from you. 💌</p><div class="footer">— MG 🌹</div>`)}
